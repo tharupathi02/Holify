@@ -15,9 +15,13 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.material.snackbar.Snackbar
+import com.leoxtech.holify.Common.CheckConnectionLiveData
 import com.leoxtech.holify.R
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var cld : CheckConnectionLiveData
 
     private lateinit var fusedLocation: FusedLocationProviderClient
     var isPermissionGranted: Boolean = false
@@ -33,7 +37,7 @@ class MainActivity : AppCompatActivity() {
 
         getWindow().setFlags(
             WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            WindowManager.LayoutParams.FLAG_FULLSCREEN)
 
         fusedLocation = LocationServices.getFusedLocationProviderClient(this)
 
@@ -67,11 +71,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun goToDashboard() {
-        Handler().postDelayed({
-            val intent = Intent(this, Dashboard::class.java)
-            startActivity(intent)
-            finish()
-        }, 2000)
+
+        cld = CheckConnectionLiveData(application)
+
+        cld.observe(this) {
+            if (it) {
+                Handler().postDelayed({
+                    val intent = Intent(this, Dashboard::class.java)
+                    startActivity(intent)
+                    finish()
+                }, 2000)
+            } else {
+                Toast.makeText(this,"Not Connected",Toast.LENGTH_SHORT).show()
+            }
+        }
+
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
