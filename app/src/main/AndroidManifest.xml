@@ -17,6 +17,9 @@
         android:theme="@style/Theme.Holify"
         tools:targetApi="31">
         <activity
+            android:name=".UI.WorldCalendar"
+            android:exported="false" />
+        <activity
             android:name=".UI.GoBackYears"
             android:exported="false" />
         <activity
