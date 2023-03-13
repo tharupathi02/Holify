@@ -39,7 +39,7 @@ class GoBackYears : AppCompatActivity() {
     private lateinit var txtNoHolidaysFound: TextView
 
     private lateinit var dialog: AlertDialog
-    private lateinit var bottomSheetDialog : BottomSheetDialog
+    private lateinit var bottomSheetDialog: BottomSheetDialog
 
     private lateinit var holidaysList: ArrayList<HolidaysModel>
 
@@ -49,7 +49,6 @@ class GoBackYears : AppCompatActivity() {
     private val LOCATION_REQUEST_CODE = 100
 
     private var countryId: String? = null
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,11 +67,25 @@ class GoBackYears : AppCompatActivity() {
     }
 
     private fun checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION), LOCATION_REQUEST_CODE)
-        } else{
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
+                LOCATION_REQUEST_CODE
+            )
+        } else {
             isPermissionGranted = true
-            if (isPermissionGranted){
+            if (isPermissionGranted) {
                 getCountry()
             }
         }
@@ -81,46 +94,56 @@ class GoBackYears : AppCompatActivity() {
     @SuppressLint("MissingPermission")
     private fun getCountry() {
         dialog.show()
-        if (isPermissionGranted){
+        if (isPermissionGranted) {
             val locationResult = fusedLocation.lastLocation
-            locationResult.addOnCompleteListener(this){location ->
+            locationResult.addOnCompleteListener(this) { location ->
                 if (location.isSuccessful) {
                     val lastLocation = location.result
                     val geocoder = Geocoder(this, Locale.getDefault())
-                    val addresses = geocoder.getFromLocation(lastLocation!!.latitude, lastLocation.longitude, 1)
+                    val addresses =
+                        geocoder.getFromLocation(lastLocation!!.latitude, lastLocation.longitude, 1)
                     val country = addresses?.get(0)!!.countryName
                     if (country != null) {
                         getCountryId(country)
                     } else {
-                        getHolidays(SimpleDateFormat("yyyy", Locale.getDefault()).format(Date()),"0","LK")
+                        getHolidays(
+                            SimpleDateFormat("yyyy", Locale.getDefault()).format(Date()),
+                            "0",
+                            "LK"
+                        )
                         dialog.dismiss()
                     }
                 } else {
-                    getHolidays(SimpleDateFormat("yyyy", Locale.getDefault()).format(Date()),"0","LK")
+                    getHolidays(
+                        SimpleDateFormat("yyyy", Locale.getDefault()).format(Date()),
+                        "0",
+                        "LK"
+                    )
                     dialog.dismiss()
                 }
             }
         } else {
-            getHolidays(SimpleDateFormat("yyyy", Locale.getDefault()).format(Date()),"0","LK")
+            getHolidays(SimpleDateFormat("yyyy", Locale.getDefault()).format(Date()), "0", "LK")
             dialog.dismiss()
         }
     }
 
     private fun getCountryId(name: String) {
-        val url = resources.getString(R.string.COUNTRIES_BASE_URL) + resources.getString(R.string.API_KEY)
+        val url =
+            resources.getString(R.string.COUNTRIES_BASE_URL) + resources.getString(R.string.API_KEY)
         val resultCountries = StringRequest(Request.Method.GET, url, Response.Listener { response ->
             try {
                 val jsonObject = JSONObject(response)
                 val jsonObjectResponse = jsonObject.getJSONObject("response")
                 val jsonArrayCountries = jsonObjectResponse.getJSONArray("countries")
-                for (i in 0 until jsonArrayCountries.length()){
+                for (i in 0 until jsonArrayCountries.length()) {
                     val jsonObjectCountry = jsonArrayCountries.getJSONObject(i)
-                    if (jsonObjectCountry.getString("country_name") == name){
+                    if (jsonObjectCountry.getString("country_name") == name) {
                         countryId = jsonObjectCountry.getString("iso-3166").toString()
                         getHolidays(countryId.toString())
                     }
                 }
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 Toast.makeText(this, "" + e.message, Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
             }
@@ -145,7 +168,7 @@ class GoBackYears : AppCompatActivity() {
         // set passed 10 years to spinner
         val years = ArrayList<String>()
         val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-        for (i in 0..10){
+        for (i in 0..10) {
             years.add((currentYear - i).toString())
         }
         val adapterYear = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, years)
@@ -185,47 +208,55 @@ class GoBackYears : AppCompatActivity() {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun getHolidays(year: String, month: String, country : String) {
+    private fun getHolidays(year: String, month: String, country: String) {
         dialog.show()
         // Clear list
         holidaysList.clear()
-        val url = resources.getString(R.string.HOLIDAYS_BASE_URL) + resources.getString(R.string.API_KEY) + "&country=" + country + "&year=" + year
+        val url =
+            resources.getString(R.string.HOLIDAYS_BASE_URL) + resources.getString(R.string.API_KEY) + "&country=" + country + "&year=" + year
 
         val result = StringRequest(Request.Method.GET, url, Response.Listener { response ->
             try {
                 val jsonObject = JSONObject(response)
-                if (jsonObject != null){
+                if (jsonObject != null) {
                     val jsonObjectResponse = jsonObject.getJSONObject("response")
                     val jsonArrayHolidays = jsonObjectResponse.getJSONArray("holidays")
-                    for (i in 0 until jsonArrayHolidays.length()){
+                    for (i in 0 until jsonArrayHolidays.length()) {
                         val jsonObjectHolidayList = jsonArrayHolidays.getJSONObject(i)
                         val date = jsonObjectHolidayList.getJSONObject("date")
                         val dateTime = date.getJSONObject("datetime")
                         val holidays = HolidaysModel()
-                        if (dateTime.getString("month") == month){
+                        if (dateTime.getString("month") == month) {
                             holidays.holidayName = jsonObjectHolidayList.getString("name")
-                            holidays.holidayDescription = jsonObjectHolidayList.getString("description")
+                            holidays.holidayDescription =
+                                jsonObjectHolidayList.getString("description")
                             holidays.holidayDate = dateTime.getString("day")
                             holidays.holidayMonth = dateTime.getString("month")
                             holidays.holidayYear = dateTime.getString("year")
-                            holidays.holidayPrimaryType = jsonObjectHolidayList.getString("primary_type")
-                            holidays.holidayCountry = jsonObjectHolidayList.getJSONObject("country").getString("name")
+                            holidays.holidayPrimaryType =
+                                jsonObjectHolidayList.getString("primary_type")
+                            holidays.holidayCountry =
+                                jsonObjectHolidayList.getJSONObject("country").getString("name")
                             holidaysList.add(holidays)
-                        } else if (month == "0"){
+                        } else if (month == "0") {
                             holidays.holidayName = jsonObjectHolidayList.getString("name")
-                            holidays.holidayDescription = jsonObjectHolidayList.getString("description")
+                            holidays.holidayDescription =
+                                jsonObjectHolidayList.getString("description")
                             holidays.holidayDate = dateTime.getString("day")
                             holidays.holidayMonth = dateTime.getString("month")
                             holidays.holidayYear = dateTime.getString("year")
-                            holidays.holidayPrimaryType = jsonObjectHolidayList.getString("primary_type")
-                            holidays.holidayCountry = jsonObjectHolidayList.getJSONObject("country").getString("name")
+                            holidays.holidayPrimaryType =
+                                jsonObjectHolidayList.getString("primary_type")
+                            holidays.holidayCountry =
+                                jsonObjectHolidayList.getJSONObject("country").getString("name")
                             holidaysList.add(holidays)
                         }
                     }
                     // Pass holidays to adapter
                     val adapter = HolidayAdapter(this, holidaysList)
                     recyclerViewBackYears.setHasFixedSize(true)
-                    recyclerViewBackYears.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+                    recyclerViewBackYears.layoutManager =
+                        LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
                     recyclerViewBackYears.adapter = adapter
                     adapter.notifyDataSetChanged()
                     dialog.dismiss()
@@ -235,7 +266,7 @@ class GoBackYears : AppCompatActivity() {
                     dialog.dismiss()
                 }
 
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
             }
@@ -249,10 +280,13 @@ class GoBackYears : AppCompatActivity() {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun getHolidays(country : String) {
+    private fun getHolidays(country: String) {
         holidaysList.clear()
-        val url = resources.getString(R.string.HOLIDAYS_BASE_URL) + resources.getString(R.string.API_KEY) + "&country=" + country + "&year=" + SimpleDateFormat("yyyy",
-            Locale.getDefault()).format(Date())
+        val url =
+            resources.getString(R.string.HOLIDAYS_BASE_URL) + resources.getString(R.string.API_KEY) + "&country=" + country + "&year=" + SimpleDateFormat(
+                "yyyy",
+                Locale.getDefault()
+            ).format(Date())
 
         val result = StringRequest(Request.Method.GET, url, Response.Listener { response ->
             try {
@@ -260,7 +294,7 @@ class GoBackYears : AppCompatActivity() {
                 val jsonObjectResponse = jsonObject.getJSONObject("response")
                 val jsonArrayHolidays = jsonObjectResponse.getJSONArray("holidays")
 
-                for (i in 0 until jsonArrayHolidays.length()){
+                for (i in 0 until jsonArrayHolidays.length()) {
                     val jsonObjectHolidayList = jsonArrayHolidays.getJSONObject(i)
                     val date = jsonObjectHolidayList.getJSONObject("date")
                     val dateTime = date.getJSONObject("datetime")
@@ -271,19 +305,21 @@ class GoBackYears : AppCompatActivity() {
                     holidays.holidayMonth = dateTime.getString("month")
                     holidays.holidayYear = dateTime.getString("year")
                     holidays.holidayPrimaryType = jsonObjectHolidayList.getString("primary_type")
-                    holidays.holidayCountry = jsonObjectHolidayList.getJSONObject("country").getString("name")
+                    holidays.holidayCountry =
+                        jsonObjectHolidayList.getJSONObject("country").getString("name")
                     holidaysList.add(holidays)
                 }
 
                 // Pass holidays to adapter
                 val adapter = HolidayAdapter(this, holidaysList)
                 recyclerViewBackYears.setHasFixedSize(true)
-                recyclerViewBackYears.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+                recyclerViewBackYears.layoutManager =
+                    LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
                 recyclerViewBackYears.adapter = adapter
                 adapter.notifyDataSetChanged()
                 dialog.dismiss()
 
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 Toast.makeText(this, e.message, Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
             }
