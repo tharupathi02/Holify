@@ -73,13 +73,14 @@ class Dashboard : AppCompatActivity() {
     @SuppressLint("MissingPermission")
     private fun getCountry() {
         dialog.show()
-        if (isPermissionGranted){
+        if (isPermissionGranted) {
             val locationResult = fusedLocation.lastLocation
-            locationResult.addOnCompleteListener(this){location ->
+            locationResult.addOnCompleteListener(this) { location ->
                 if (location.isSuccessful) {
                     val lastLocation = location.result
                     val geocoder = Geocoder(this, Locale.getDefault())
-                    val addresses = geocoder.getFromLocation(lastLocation!!.latitude, lastLocation.longitude, 1)
+                    val addresses =
+                        geocoder.getFromLocation(lastLocation!!.latitude, lastLocation.longitude, 1)
                     val country = addresses?.get(0)!!.countryName
                     txtLocationCountry.text = country
                     txtCountryNameInCard.text = "Last Holidays in\n $country"
@@ -103,20 +104,21 @@ class Dashboard : AppCompatActivity() {
     }
 
     private fun getCountryId(name: String) {
-        val url = resources.getString(R.string.COUNTRIES_BASE_URL) + resources.getString(R.string.API_KEY)
+        val url =
+            resources.getString(R.string.COUNTRIES_BASE_URL) + resources.getString(R.string.API_KEY)
         val resultCountries = StringRequest(Request.Method.GET, url, Response.Listener { response ->
             try {
                 val jsonObject = JSONObject(response)
                 val jsonObjectResponse = jsonObject.getJSONObject("response")
                 val jsonArrayCountries = jsonObjectResponse.getJSONArray("countries")
-                for (i in 0 until jsonArrayCountries.length()){
+                for (i in 0 until jsonArrayCountries.length()) {
                     val jsonObjectCountry = jsonArrayCountries.getJSONObject(i)
-                    if (jsonObjectCountry.getString("country_name") == name){
+                    if (jsonObjectCountry.getString("country_name") == name) {
                         countryId = jsonObjectCountry.getString("iso-3166").toString()
                         getHolidaysInThisMonth(countryId!!)
                     }
                 }
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 Toast.makeText(this, "" + e.message, Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
             }
@@ -129,8 +131,8 @@ class Dashboard : AppCompatActivity() {
 
     private fun clickListeners() {
         cardBoBackYears.setOnClickListener {
-//            val intent = Intent(this, GoBackYears::class.java)
-//            startActivity(intent)
+            val intent = Intent(this, GoBackYears::class.java)
+            startActivity(intent)
         }
         cardWorldCalendar.setOnClickListener {
 //            val intent = Intent(this, WorldCalendar::class.java)
@@ -140,8 +142,11 @@ class Dashboard : AppCompatActivity() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun getHolidaysInThisMonth(country: String) {
-        val url = resources.getString(R.string.HOLIDAYS_BASE_URL) + resources.getString(R.string.API_KEY) + "&country=" + country + "&year=" + SimpleDateFormat("yyyy",
-            Locale.getDefault()).format(Date())
+        val url =
+            resources.getString(R.string.HOLIDAYS_BASE_URL) + resources.getString(R.string.API_KEY) + "&country=" + country + "&year=" + SimpleDateFormat(
+                "yyyy",
+                Locale.getDefault()
+            ).format(Date())
 
         val result = StringRequest(Request.Method.GET, url, Response.Listener { response ->
 
@@ -154,26 +159,30 @@ class Dashboard : AppCompatActivity() {
                 val currentMonth = SimpleDateFormat("M", Locale.getDefault()).format(Date())
                 val currentDay = SimpleDateFormat("d", Locale.getDefault()).format(Date())
                 val longMonth = SimpleDateFormat("MMMM", Locale.getDefault()).format(Date())
-                for (i in 0 until jsonArrayHolidays.length()){
+                for (i in 0 until jsonArrayHolidays.length()) {
                     val jsonObjectHolidayList = jsonArrayHolidays.getJSONObject(i)
                     val date = jsonObjectHolidayList.getJSONObject("date")
                     val dateTime = date.getJSONObject("datetime")
                     val month = dateTime.getString("month")
-                    if (month == currentMonth){
+                    if (month == currentMonth) {
                         val holidays = HolidaysModel()
                         holidays.holidayName = jsonObjectHolidayList.getString("name")
                         holidays.holidayDescription = jsonObjectHolidayList.getString("description")
                         holidays.holidayDate = dateTime.getString("day")
                         holidays.holidayMonth = longMonth
                         holidays.holidayYear = dateTime.getString("year")
-                        holidays.holidayPrimaryType = jsonObjectHolidayList.getString("primary_type")
-                        holidays.holidayCountry = jsonObjectHolidayList.getJSONObject("country").getString("name")
+                        holidays.holidayPrimaryType =
+                            jsonObjectHolidayList.getString("primary_type")
+                        holidays.holidayCountry =
+                            jsonObjectHolidayList.getJSONObject("country").getString("name")
                         holidaysInThisMonth.add(holidays)
-                        if (currentDay == dateTime.getString("day")){
+                        if (currentDay == dateTime.getString("day")) {
                             txtHoliday.text = jsonObjectHolidayList.getString("name")
                             Common.HOLIDAY_NAME = jsonObjectHolidayList.getString("name")
                             if (jsonObjectHolidayList.getString("name").contains("Poya")) {
-                                Glide.with(this).load("https://img.icons8.com/color/5200/null/dharmacakra.png").into(imgHoliday)
+                                Glide.with(this)
+                                    .load("https://img.icons8.com/color/5200/null/dharmacakra.png")
+                                    .into(imgHoliday)
                                 imgHoliday.visibility = View.VISIBLE
                             } else {
                                 imgHoliday.visibility = View.GONE
@@ -185,12 +194,13 @@ class Dashboard : AppCompatActivity() {
                 // Pass holidays to adapter
                 val adapter = HolidaysInMonthAdapter(this, holidaysInThisMonth)
                 recyclerViewHolidayInThisMonth.setHasFixedSize(true)
-                recyclerViewHolidayInThisMonth.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+                recyclerViewHolidayInThisMonth.layoutManager =
+                    LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
                 recyclerViewHolidayInThisMonth.adapter = adapter
                 adapter.notifyDataSetChanged()
                 dialog.dismiss()
 
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 Toast.makeText(this, "" + e.message.toString(), Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
             }
@@ -210,14 +220,18 @@ class Dashboard : AppCompatActivity() {
 
         // Check time status (Morning, Afternoon, Evening, Night) and set image
         val time = SimpleDateFormat("HH", Locale.getDefault()).format(Date())
-        if (time.toInt() in 0..11){
-            Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/2584/2584049.png").into(imgTimeStatus)
-        }else if (time.toInt() in 12..16){
-            Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/7774/7774377.png").into(imgTimeStatus)
-        } else if (time.toInt() in 17..19){
-            Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/577/577600.png").into(imgTimeStatus)
-        } else if (time.toInt() in 20..23){
-            Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/7687/7687113.png").into(imgTimeStatus)
+        if (time.toInt() in 0..11) {
+            Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/2584/2584049.png")
+                .into(imgTimeStatus)
+        } else if (time.toInt() in 12..16) {
+            Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/7774/7774377.png")
+                .into(imgTimeStatus)
+        } else if (time.toInt() in 17..19) {
+            Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/577/577600.png")
+                .into(imgTimeStatus)
+        } else if (time.toInt() in 20..23) {
+            Glide.with(this).load("https://cdn-icons-png.flaticon.com/512/7687/7687113.png")
+                .into(imgTimeStatus)
         }
 
     }
@@ -247,17 +261,35 @@ class Dashboard : AppCompatActivity() {
     }
 
     private fun checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION), LOCATION_REQUEST_CODE)
-        } else{
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
+                LOCATION_REQUEST_CODE
+            )
+        } else {
             isPermissionGranted = true
-            if (isPermissionGranted){
+            if (isPermissionGranted) {
                 getCountry()
             }
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         isPermissionGranted = false
         when (requestCode) {
             LOCATION_REQUEST_CODE -> {
