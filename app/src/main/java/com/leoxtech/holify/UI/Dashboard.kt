@@ -37,15 +37,13 @@ class Dashboard : AppCompatActivity() {
     private lateinit var txtHolidaysInThisMonth: TextView
     private lateinit var txtHoliday: TextView
     private lateinit var recyclerViewHolidayInThisMonth: RecyclerView
-    private lateinit var cardBoBackYears: MaterialCardView
+    private lateinit var cardGoBackYears: MaterialCardView
     private lateinit var cardWorldCalendar: MaterialCardView
     private lateinit var imgHoliday: ImageView
     private lateinit var imgTimeStatus: ImageView
     private lateinit var txtLocationCountry: TextView
     private lateinit var txtCountryNameInCard: TextView
-
     private lateinit var dialog: AlertDialog
-
     private lateinit var holidaysInThisMonth: ArrayList<HolidaysModel>
 
     // Locations
@@ -130,7 +128,7 @@ class Dashboard : AppCompatActivity() {
     }
 
     private fun clickListeners() {
-        cardBoBackYears.setOnClickListener {
+        cardGoBackYears.setOnClickListener {
             val intent = Intent(this, GoBackYears::class.java)
             startActivity(intent)
         }
@@ -242,7 +240,7 @@ class Dashboard : AppCompatActivity() {
         txtHoliday = findViewById(R.id.txtHoliday)
         recyclerViewHolidayInThisMonth = findViewById(R.id.recyclerViewHolidayInThisMonth)
         cardWorldCalendar = findViewById(R.id.cardWorldCalendar)
-        cardBoBackYears = findViewById(R.id.cardBoBackYears)
+        cardGoBackYears = findViewById(R.id.cardGoBackYears)
         imgHoliday = findViewById(R.id.imgHoliday)
         imgTimeStatus = findViewById(R.id.imgTimeStatus)
         txtLocationCountry = findViewById(R.id.txtLocationCountry)
